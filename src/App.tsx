@@ -1,11 +1,11 @@
 import "./App.css";
-import { Button } from "./components/ui/button";
+import { BookmarksViewer } from "./pages/BookmarksViewer";
 
 function App() {
   return (
-    <>
-      <Button onClick={() => alert("Hello")}>Click Me</Button>
-    </>
+    <div className="min-h-screen bg-background">
+      <BookmarksViewer />
+    </div>
   );
 }
 
