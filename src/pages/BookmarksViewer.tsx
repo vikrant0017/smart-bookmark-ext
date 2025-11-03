@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Bookmark } from "@/components/Bookmark";
 import { Search, Filter } from "lucide-react";
+import type { BookmarkContent } from "@/utils/bookmark";
 
 // Mock data for bookmarks
 const mockBookmarks = [
@@ -83,6 +84,56 @@ export function BookmarksViewer() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("recent");
+  const [bookmarks, setBookmarks] = useState<BookmarkContent[]>([]);
+
+  useEffect(() => {
+    chrome.storage.local.get(null).then((values) => {
+      console.log("Bookmarks", values);
+      const bks = Object.values(values) as BookmarkContent[];
+      setBookmarks(bks);
+    });
+  }, []);
+
+  useEffect(() => {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
+        // TODO: Replace with a logger for debug purpose in development
+        console.log(
+          `Storage key "${key}" in namespace "${namespace}" changed.`,
+          `Old value was "${oldValue}", new value is "${newValue}".`,
+        );
+
+        /*
+        If a new entry is added oldValue will be underfined and newValue will contain the set value,
+        else if a entry is deleted, newValue will be undefined.
+        */
+
+        if (newValue) {
+          setBookmarks((prev) => {
+            if (
+              prev.findIndex(({ timestamp }) => timestamp === Number(key)) == -1
+            ) {
+              return [...prev, newValue];
+            }
+
+            return prev;
+          });
+        } else {
+          setBookmarks((prev) => {
+            const index = prev.findIndex(
+              ({ timestamp }) => timestamp === Number(key),
+            );
+
+            if (index !== -1) {
+              return [...prev.slice(0, index), ...prev.slice(index + 1)];
+            }
+
+            return prev;
+          });
+        }
+      }
+    });
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -179,15 +230,15 @@ export function BookmarksViewer() {
       {/* Bookmarks Count */}
       <div className="mb-4">
         <p className="text-sm text-muted-foreground">
-          Showing {mockBookmarks.length} bookmarks
+          Showing {bookmarks.length} bookmarks
         </p>
       </div>
 
       {/* Bookmarks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockBookmarks.map((bookmark) => (
+        {bookmarks.map((bookmark) => (
           <Bookmark
-            key={bookmark.id}
+            key={bookmark.timestamp}
             title={bookmark.title}
             url={bookmark.url}
             description={bookmark.description}
@@ -197,7 +248,7 @@ export function BookmarksViewer() {
       </div>
 
       {/* Empty State (hidden when there are bookmarks) */}
-      {mockBookmarks.length === 0 && (
+      {bookmarks.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted-foreground text-lg">No bookmarks found</p>
           <p className="text-sm text-muted-foreground mt-2">

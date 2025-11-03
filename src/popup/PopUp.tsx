@@ -3,10 +3,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Bookmark, BookmarkCheck, Settings } from "lucide-react";
 import { openBookmarks } from "@/lib/helpers";
+import type { BookmarkContent } from "@/utils/bookmark";
+import { useState } from "react";
 
 export function PopUp() {
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const handleOpenBookmarks = () => {
     openBookmarks();
+  };
+
+  const handleBookmarkPage = async () => {
+    const tabs = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    const tab = tabs[0]; // Since only one tab is possible for the above query params, just a guess :)
+
+    const currentTime = Date.now();
+    const bookmark: BookmarkContent = {
+      title: tab.title || "",
+      url: tab.url || "",
+      // TODO - fill with AI
+      // description: "This is an example description",
+      // tags: ["tag1", "tag2"],
+      timestamp: currentTime,
+    };
+
+    await chrome.storage.local.set({ [currentTime]: bookmark });
+    setIsBookmarked(true);
   };
 
   return (
@@ -24,10 +48,26 @@ export function PopUp() {
             <p className="text-xs text-muted-foreground uppercase font-medium">
               Quick Action
             </p>
-            <Button className="w-full" size="lg">
-              <Bookmark className="mr-2 h-4 w-4" />
-              Bookmark this page
-            </Button>
+            {!isBookmarked ? (
+              <Button
+                onClick={handleBookmarkPage}
+                className="w-full justify-start"
+                size="lg"
+              >
+                <Bookmark className="mr-2 h-4 w-4" />
+                Bookmark this page
+              </Button>
+            ) : (
+              <Button
+                disabled
+                variant={"ghost"}
+                className="w-full justify-start"
+                size="lg"
+              >
+                <BookmarkCheck className="mr-2 h-4 w-4" />
+                Bookmarked
+              </Button>
+            )}
           </div>
 
           <Separator />
