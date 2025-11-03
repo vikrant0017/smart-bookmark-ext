@@ -1,4 +1,3 @@
-import "./App.css";
 import { BookmarksViewer } from "./pages/BookmarksViewer";
 
 function App() {

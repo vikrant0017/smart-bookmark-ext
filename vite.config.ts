@@ -11,4 +11,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "dist",
+    rolldownOptions: {
+      input: {
+        popup: path.resolve(__dirname, "popup.html"),
+        bookmark: path.resolve(__dirname, "index.html"),
+      },
+    },
+  },
+  publicDir: "public",
 });
