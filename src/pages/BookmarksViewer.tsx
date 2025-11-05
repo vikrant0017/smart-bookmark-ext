@@ -11,6 +11,7 @@ import {
 import { Bookmark } from "@/components/Bookmark";
 import { Search, Filter } from "lucide-react";
 import type { BookmarkContent } from "@/utils/bookmark";
+import { getAll } from "@/lib/storage";
 
 // Mock data for bookmarks
 const mockBookmarks = [
@@ -87,11 +88,13 @@ export function BookmarksViewer() {
   const [bookmarks, setBookmarks] = useState<BookmarkContent[]>([]);
 
   useEffect(() => {
-    chrome.storage.local.get(null).then((values) => {
-      console.log("Bookmarks", values);
-      const bks = Object.values(values) as BookmarkContent[];
-      setBookmarks(bks);
-    });
+    // Retrive all the bookmarks from the storage during mount
+    const getAllBookmarks = async () => {
+      const data = await getAll();
+      setBookmarks(data as BookmarkContent[]);
+    };
+
+    getAllBookmarks();
   }, []);
 
   useEffect(() => {

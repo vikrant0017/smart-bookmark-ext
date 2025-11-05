@@ -5,6 +5,7 @@ import { Bookmark, BookmarkCheck, Settings } from "lucide-react";
 import { openBookmarks } from "@/lib/helpers";
 import type { BookmarkContent } from "@/utils/bookmark";
 import { useState } from "react";
+import { add } from "@/lib/storage";
 
 export function PopUp() {
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
@@ -23,13 +24,12 @@ export function PopUp() {
     const bookmark: BookmarkContent = {
       title: tab.title || "",
       url: tab.url || "",
-      // TODO - fill with AI
-      // description: "This is an example description",
-      // tags: ["tag1", "tag2"],
       timestamp: currentTime,
     };
 
-    await chrome.storage.local.set({ [currentTime]: bookmark });
+    // await chrome.storage.local.set({ [currentTime]: bookmark });
+    const added = await add(bookmark);
+    console.log("Added new bookmark", added);
     setIsBookmarked(true);
   };
 
