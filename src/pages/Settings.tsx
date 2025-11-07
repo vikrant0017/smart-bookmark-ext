@@ -1,0 +1,329 @@
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+
+interface ModelProvider {
+  id: string;
+  name: string;
+  requiresApiKey: boolean;
+  requiresBaseUrl?: boolean;
+  defaultBaseUrl?: string;
+}
+
+const MODEL_PROVIDERS: ModelProvider[] = [
+  { id: "openai", name: "OpenAI", requiresApiKey: true },
+  { id: "gemini", name: "Google Gemini", requiresApiKey: true },
+  // { id: "claude", name: "Anthropic Claude", requiresApiKey: true },
+  // {
+  //   id: "ollama",
+  //   name: "Ollama",
+  //   requiresApiKey: false,
+  //   requiresBaseUrl: true,
+  //   defaultBaseUrl: "http://localhost:11434",
+  // },
+];
+
+interface ProviderConfig {
+  apiKey?: string;
+  baseUrl?: string;
+}
+
+interface Settings {
+  activeProvider: string | null;
+  providerConfigs: {
+    [key: string]: ProviderConfig;
+  };
+}
+
+export function Settings() {
+  const { theme, setTheme } = useTheme();
+  const [settings, setSettings] = useState<Settings>({
+    activeProvider: null,
+    providerConfigs: {},
+  });
+
+  const [apiKeys, setApiKeys] = useState<[string, null | string][]>(
+    Array.from(MODEL_PROVIDERS).map(({ id }) => [id, null]),
+  );
+  const [openProviders, setOpenProviders] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Fetch saved values from local store if available
+    const fetchSettings = async () => {
+      const res = await chrome.storage.local.get("settings");
+      const settings: Settings = res?.settings;
+      if (settings) {
+        setSettings(settings);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    // Fetch saved values from local store if available
+    const syncSettings = async () => {
+      console.log("syncing changes...");
+      chrome.storage.local.set({ settings }).then(() => {
+        console.log("Synced successfully");
+      });
+    };
+
+    syncSettings();
+  }, [settings]);
+
+  const handleApiKeyChange = (apiKey: string, providerId: string) => {
+    setApiKeys((prev) =>
+      prev.map(([pId, key]) => {
+        return pId == providerId ? [pId, apiKey] : [pId, key];
+      }),
+    );
+  };
+
+  const handleBaseUrlChange = (providerId: string, baseUrl: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      providerConfigs: {
+        ...prev.providerConfigs,
+        [providerId]: {
+          ...prev.providerConfigs[providerId],
+          baseUrl,
+        },
+      },
+    }));
+  };
+
+  const isProviderConfigured = (providerId: string): boolean => {
+    const provider = MODEL_PROVIDERS.find((p) => p.id === providerId);
+    const config = settings.providerConfigs[providerId];
+
+    if (!provider) return false;
+
+    if (provider.requiresApiKey && !config?.apiKey) return false;
+    if (provider.requiresBaseUrl && !config?.baseUrl) return false;
+
+    return true;
+  };
+
+  const handleProviderToggle = (providerId: string, enabled: boolean) => {
+    console.log("Provider toggle", providerId, enabled);
+    if (enabled) {
+      // Deactivate all other providers and activate this one
+      setSettings((prev) => ({
+        ...prev,
+        activeProvider: providerId,
+      }));
+
+      // Auto-open dropdown if not configured
+      if (!isProviderConfigured(providerId)) {
+        setOpenProviders((prev) => new Set(prev).add(providerId));
+      }
+    } else {
+      // Deactivate this provider
+      setSettings((prev) => ({
+        ...prev,
+        activeProvider: null,
+      }));
+    }
+  };
+
+  const handleThemeToggle = (checked: boolean) => {
+    if (checked) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
+
+  const toggleProviderOpen = (providerId: string) => {
+    setOpenProviders((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(providerId)) {
+        newSet.delete(providerId);
+      } else {
+        newSet.add(providerId);
+      }
+      return newSet;
+    });
+  };
+
+  const saveApiKey = (providerId: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const found = apiKeys.find(([pId, _apiKey]) => pId == providerId)!;
+    const apiKey = found[1];
+
+    setSettings((prev) => ({
+      ...prev,
+      providerConfigs: {
+        ...prev.providerConfigs,
+        [providerId]: {
+          ...prev.providerConfigs[providerId],
+          apiKey: apiKey || "",
+        },
+      },
+    }));
+  };
+
+  const getProviderBaseUrl = (providerId: string): string => {
+    const provider = MODEL_PROVIDERS.find((p) => p.id === providerId);
+    return (
+      settings.providerConfigs[providerId]?.baseUrl ||
+      provider?.defaultBaseUrl ||
+      ""
+    );
+  };
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <p className="text-muted-foreground">Loading settings...</p>
+  //     </div>
+  //   );
+  // }
+
+  return (
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your AI model providers and preferences
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Theme Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Appearance</CardTitle>
+            <CardDescription>
+              Customize the look and feel of the application
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable dark mode for a more comfortable viewing experience
+                </p>
+              </div>
+              <Switch
+                id="dark-mode"
+                checked={theme == "dark"}
+                onCheckedChange={handleThemeToggle}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Model Provider Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>AI Model Providers</CardTitle>
+            <CardDescription>
+              Select your active AI model provider and configure settings. Only
+              one provider can be active at a time.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {MODEL_PROVIDERS.map((provider, index) => (
+              <div key={provider.id}>
+                <Collapsible
+                  open={openProviders.has(provider.id)}
+                  onOpenChange={() => toggleProviderOpen(provider.id)}
+                >
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3 flex-1">
+                      <CollapsibleTrigger className="flex items-center hover:opacity-70 transition-opacity">
+                        {openProviders.has(provider.id) ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </CollapsibleTrigger>
+                      <div className="flex-1">
+                        <div className="font-semibold">{provider.name}</div>
+                        <p className="text-sm text-muted-foreground">
+                          {provider.requiresApiKey
+                            ? "Requires API key"
+                            : "No API key required"}
+                          {provider.requiresBaseUrl && " • Base URL required"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.activeProvider === provider.id}
+                      onCheckedChange={(checked) =>
+                        handleProviderToggle(provider.id, checked)
+                      }
+                    />
+                  </div>
+
+                  <CollapsibleContent className="pl-7 pr-4 pb-4 space-y-4">
+                    {provider.requiresApiKey && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`${provider.id}-key`}>API Key</Label>
+                        <Input
+                          id={`${provider.id}-key`}
+                          type="password"
+                          placeholder={`Enter your ${provider.name} API key`}
+                          value={apiKeys[index][1] ?? ""}
+                          onChange={(e) =>
+                            handleApiKeyChange(e.target.value, provider.id)
+                          }
+                          onBlur={() => {
+                            saveApiKey(provider.id);
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {provider.requiresBaseUrl && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`${provider.id}-baseurl`}>
+                          Base URL
+                        </Label>
+                        <Input
+                          id={`${provider.id}-baseurl`}
+                          type="text"
+                          placeholder={provider.defaultBaseUrl}
+                          value={getProviderBaseUrl(provider.id)}
+                          onChange={(e) =>
+                            handleBaseUrlChange(provider.id, e.target.value)
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Default: {provider.defaultBaseUrl}
+                        </p>
+                      </div>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {index !== MODEL_PROVIDERS.length - 1 && <Separator />}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

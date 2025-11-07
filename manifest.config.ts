@@ -10,4 +10,10 @@ export default defineManifest({
     default_title: "Open Bookmark Panel",
     default_popup: "popup.html",
   },
+  content_scripts: [
+    {
+      matches: ["<all_urls>"],
+      js: ["src/contentScripts/content"], // Dont use .{js,ts} exts
+    },
+  ],
 });

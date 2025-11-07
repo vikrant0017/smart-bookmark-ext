@@ -1,10 +1,11 @@
+import { ThemeProvider } from "./components/ThemeProvider";
 import { BookmarksViewer } from "./pages/BookmarksViewer";
 
 function App() {
   return (
-    <div className="min-h-screen bg-background">
+    <ThemeProvider defaultTheme="dark">
       <BookmarksViewer />
-    </div>
+    </ThemeProvider>
   );
 }
 

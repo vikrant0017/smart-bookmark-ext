@@ -30,6 +30,7 @@ export default defineConfig({
       input: {
         popup: path.resolve(__dirname, "popup.html"),
         bookmark: path.resolve(__dirname, "index.html"),
+        settings: path.resolve(__dirname, "settings.html"),
       },
     },
   },

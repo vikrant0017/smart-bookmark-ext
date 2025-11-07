@@ -14,7 +14,8 @@ export const openDB = async (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     // REMINDER: these are event handlers not callbacks
-    request.onupgradeneeded = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    request.onupgradeneeded = (_event: IDBVersionChangeEvent) => {
       console.log("Upgrading db...");
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -38,7 +39,8 @@ export const openDB = async (): Promise<IDBDatabase> => {
   });
 };
 
-export const add = async (data: Record<string, any>) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const add = async (data: any) => {
   console.log("adding");
   const db = await openDB();
   console.log("db connection established");

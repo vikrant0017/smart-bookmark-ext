@@ -10,76 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Bookmark } from "@/components/Bookmark";
 import { Search, Filter } from "lucide-react";
-import type { BookmarkContent } from "@/utils/bookmark";
+import type { BookmarkContent } from "@/lib/BookmarkContent";
 import { getAll } from "@/lib/storage";
-
-// Mock data for bookmarks
-const mockBookmarks = [
-  {
-    id: 1,
-    title: "React Documentation",
-    url: "https://react.dev",
-    description:
-      "The official React documentation with guides, tutorials, and API reference for building user interfaces.",
-    tags: ["React", "JavaScript", "Frontend"],
-  },
-  {
-    id: 2,
-    title: "shadcn/ui Components",
-    url: "https://ui.shadcn.com",
-    description:
-      "Beautiful and accessible component library built with Radix UI and Tailwind CSS.",
-    tags: ["UI", "Components", "Tailwind"],
-  },
-  {
-    id: 3,
-    title: "TypeScript Handbook",
-    url: "https://www.typescriptlang.org/docs/handbook/intro.html",
-    description:
-      "Complete guide to TypeScript covering types, interfaces, generics, and advanced features.",
-    tags: ["TypeScript", "Programming", "Documentation"],
-  },
-  {
-    id: 4,
-    title: "MDN Web Docs",
-    url: "https://developer.mozilla.org",
-    description:
-      "Comprehensive resource for web developers with documentation on HTML, CSS, JavaScript, and Web APIs.",
-    tags: ["Web Development", "Reference", "Tutorial"],
-  },
-  {
-    id: 5,
-    title: "GitHub",
-    url: "https://github.com",
-    description:
-      "Platform for version control and collaboration, hosting millions of open-source projects.",
-    tags: ["Git", "Version Control", "Collaboration"],
-  },
-  {
-    id: 6,
-    title: "Stack Overflow",
-    url: "https://stackoverflow.com",
-    description:
-      "Question and answer site for programmers to learn, share knowledge, and build careers.",
-    tags: ["Q&A", "Programming", "Community"],
-  },
-  {
-    id: 7,
-    title: "Tailwind CSS",
-    url: "https://tailwindcss.com",
-    description:
-      "Utility-first CSS framework for rapidly building custom user interfaces.",
-    tags: ["CSS", "Framework", "Styling"],
-  },
-  {
-    id: 8,
-    title: "Next.js Documentation",
-    url: "https://nextjs.org/docs",
-    description:
-      "Production-ready React framework with hybrid static and server rendering, TypeScript support, and more.",
-    tags: ["Next.js", "React", "SSR"],
-  },
-];
 
 export function BookmarksViewer() {
   const [searchQuery, setSearchQuery] = useState("");
