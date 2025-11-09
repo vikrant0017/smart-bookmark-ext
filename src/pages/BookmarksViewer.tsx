@@ -13,6 +13,10 @@ import { Search, Filter } from "lucide-react";
 import type { BookmarkContent } from "@/lib/BookmarkContent";
 import { getAll } from "@/lib/storage";
 
+/* BOOKMARK CROPPING */
+const DESCRIPTION_MAX_LENGTH = 200;
+const TAGS_MAX_LENGTH = 5;
+
 export function BookmarksViewer() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -144,6 +148,8 @@ export function BookmarksViewer() {
             url={bookmark.url}
             description={bookmark.description}
             tags={bookmark.tags}
+            descMaxLength={DESCRIPTION_MAX_LENGTH}
+            tagsMaxLength={TAGS_MAX_LENGTH}
           />
         ))}
       </div>

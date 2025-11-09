@@ -12,10 +12,28 @@ interface BookmarkProps {
   url: string;
   description?: string;
   tags?: string[];
+  descMaxLength?: number; // max characters
+  tagsMaxLength?: number; // max characters
 }
 
-export function Bookmark({ title, url, description, tags }: BookmarkProps) {
-  console.log("Bookmark props", title, url, description, tags);
+export function Bookmark({
+  title,
+  url,
+  description,
+  tags,
+  descMaxLength,
+  tagsMaxLength,
+}: BookmarkProps) {
+  const desc =
+    description &&
+    description.length > (descMaxLength || Number.POSITIVE_INFINITY)
+      ? description.substring(0, descMaxLength) + "..."
+      : description;
+  const filteredTags =
+    tags && tags.length > (tagsMaxLength || Number.POSITIVE_INFINITY)
+      ? [...tags.slice(0, tagsMaxLength), "more..."]
+      : tags;
+
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
       <CardHeader>
@@ -26,14 +44,14 @@ export function Bookmark({ title, url, description, tags }: BookmarkProps) {
       </CardHeader>
       {description && tags && (
         <CardContent>
-          {description && (
+          {desc && (
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-              {description}
+              {desc}
             </p>
           )}
-          {tags && tags.length > 0 && (
+          {filteredTags && filteredTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag, index) => (
+              {filteredTags.map((tag, index) => (
                 <Badge key={index} variant="secondary">
                   {tag}
                 </Badge>
