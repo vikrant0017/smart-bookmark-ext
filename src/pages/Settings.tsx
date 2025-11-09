@@ -15,8 +15,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Check } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { Button } from "@/components/ui/button";
 
 interface ModelProvider {
   id: string;
@@ -53,47 +54,79 @@ interface Settings {
 
 export function Settings() {
   const { theme, setTheme } = useTheme();
+  // Initial state of true, to prevent the intial sync of local store with the intial state of the component
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [settings, setSettings] = useState<Settings>({
     activeProvider: null,
     providerConfigs: {},
   });
 
-  const [apiKeys, setApiKeys] = useState<[string, null | string][]>(
-    Array.from(MODEL_PROVIDERS).map(({ id }) => [id, null]),
-  );
   const [openProviders, setOpenProviders] = useState<Set<string>>(new Set());
+  const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Fetch saved values from local store if available
     const fetchSettings = async () => {
-      const res = await chrome.storage.local.get("settings");
-      const settings: Settings = res?.settings;
-      if (settings) {
-        setSettings(settings);
+      setIsLoadingSettings(true);
+      try {
+        const res = await chrome.storage.local.get("settings");
+        const settings: Settings = res?.settings;
+        console.log("set", settings);
+        if (settings) {
+          setSettings(settings);
+        }
+      } catch (e) {
+        console.error("failed to fetch settings from local store", e);
+      } finally {
+        // TODO: Should loading state be set of false if thre was error, which could potentially run the rist of overriding the
+        // local storage values when syncing
+        setIsLoadingSettings(false);
       }
     };
 
     fetchSettings();
   }, []);
 
-  useEffect(() => {
-    // Fetch saved values from local store if available
-    const syncSettings = async () => {
-      console.log("syncing changes...");
-      chrome.storage.local.set({ settings }).then(() => {
-        console.log("Synced successfully");
-      });
-    };
+  const syncSettings = async () => {
+    console.log("syncing changes...");
+    if (isLoadingSettings) {
+      return;
+    }
+    await chrome.storage.local.set({ settings });
+    console.log("Synced successfully");
+  };
 
-    syncSettings();
-  }, [settings]);
+  const handleSave = async () => {
+    setIsSaving(true);
+    setShowSavedMessage(false);
 
-  const handleApiKeyChange = (apiKey: string, providerId: string) => {
-    setApiKeys((prev) =>
-      prev.map(([pId, key]) => {
-        return pId == providerId ? [pId, apiKey] : [pId, key];
-      }),
-    );
+    try {
+      await syncSettings();
+      setShowSavedMessage(true);
+
+      // Hide the success message after 3 seconds
+      setTimeout(() => {
+        setShowSavedMessage(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleApiKeyChange = (providerId: string, apiKey: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      providerConfigs: {
+        ...prev.providerConfigs,
+        [providerId]: {
+          ...prev.providerConfigs[providerId],
+          apiKey,
+        },
+      },
+    }));
   };
 
   const handleBaseUrlChange = (providerId: string, baseUrl: string) => {
@@ -163,23 +196,6 @@ export function Settings() {
     });
   };
 
-  const saveApiKey = (providerId: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const found = apiKeys.find(([pId, _apiKey]) => pId == providerId)!;
-    const apiKey = found[1];
-
-    setSettings((prev) => ({
-      ...prev,
-      providerConfigs: {
-        ...prev.providerConfigs,
-        [providerId]: {
-          ...prev.providerConfigs[providerId],
-          apiKey: apiKey || "",
-        },
-      },
-    }));
-  };
-
   const getProviderBaseUrl = (providerId: string): string => {
     const provider = MODEL_PROVIDERS.find((p) => p.id === providerId);
     return (
@@ -187,6 +203,10 @@ export function Settings() {
       provider?.defaultBaseUrl ||
       ""
     );
+  };
+
+  const getProviderApiKey = (providerId: string): string => {
+    return settings.providerConfigs[providerId]?.apiKey || "";
   };
 
   // if (isLoading) {
@@ -285,13 +305,10 @@ export function Settings() {
                           id={`${provider.id}-key`}
                           type="password"
                           placeholder={`Enter your ${provider.name} API key`}
-                          value={apiKeys[index][1] ?? ""}
+                          value={getProviderApiKey(provider.id)}
                           onChange={(e) =>
-                            handleApiKeyChange(e.target.value, provider.id)
+                            handleApiKeyChange(provider.id, e.target.value)
                           }
-                          onBlur={() => {
-                            saveApiKey(provider.id);
-                          }}
                         />
                       </div>
                     )}
@@ -321,6 +338,21 @@ export function Settings() {
                 {index !== MODEL_PROVIDERS.length - 1 && <Separator />}
               </div>
             ))}
+            <div className="flex flex-row-reverse">
+              <div className="flex gap-3">
+                {showSavedMessage && (
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
+                    <Check className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      Saved successfully!
+                    </span>
+                  </div>
+                )}
+                <Button onClick={handleSave} disabled={isSaving}>
+                  Save
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
