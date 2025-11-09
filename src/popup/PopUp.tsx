@@ -39,10 +39,11 @@ export function PopUp() {
     const fetchSettings = async () => {
       const res = await chrome.storage.local.get("settings");
       const settings: Settings = res?.settings;
+      console.log(settings);
       if (settings) {
         setSettings(settings);
       }
-      if (!settings.activeProvider) {
+      if (!settings?.activeProvider) {
         setShowAlert(true);
       }
     };
@@ -177,7 +178,7 @@ export function PopUp() {
               <Button
                 onClick={handleQuickBookmarkPage}
                 className="w-full justify-start"
-                size="lg"
+                size="sm"
               >
                 <Bookmark className="mr-2 h-4 w-4" />
                 Quick Bookmark
@@ -187,7 +188,7 @@ export function PopUp() {
                 disabled
                 variant={"ghost"}
                 className="w-full justify-start"
-                size="lg"
+                size="sm"
               >
                 <BookmarkCheck className="mr-2 h-4 w-4" />
                 Added to Bookmarks
@@ -199,13 +200,13 @@ export function PopUp() {
                 onClick={handleSmartBookmarkPage}
                 disabled={!settings.activeProvider}
                 className="w-full justify-start"
-                size="lg"
+                size="sm"
               >
                 <LucideStars className="mr-2 h-4 w-4" />
                 Smart Bookmark
               </Button>
             ) : !isSmartBookmarked && isSummarizing ? (
-              <Button disabled className="w-full justify-start" size="lg">
+              <Button disabled className="w-full justify-start" size="sm">
                 <Spinner className="mr-2 h-4 w-4" />
                 Summarizing...
               </Button>
@@ -214,7 +215,7 @@ export function PopUp() {
                 disabled
                 variant={"ghost"}
                 className="w-full justify-start"
-                size="lg"
+                size="sm"
               >
                 <BookmarkCheck className="mr-2 h-4 w-4" />
                 Added to Bookmarks
@@ -222,9 +223,8 @@ export function PopUp() {
             )}
             {showAlert && (
               <Alert>
-                <AlertDescription>
-                  Configure your model provider in Settings to start using Smart
-                  Bookmaring feature
+                <AlertDescription className="text-sm">
+                  Set provider in Settings to enable AI bookmark
                 </AlertDescription>
               </Alert>
             )}
@@ -242,7 +242,7 @@ export function PopUp() {
                 variant="outline"
                 onClick={handleOpenBookmarks}
                 className="w-full justify-start"
-                size="default"
+                size="sm"
               >
                 <Bookmark className="mr-2 h-4 w-4" />
                 View bookmarks
@@ -251,7 +251,7 @@ export function PopUp() {
                 variant="outline"
                 onClick={handleOpenSettings}
                 className="w-full justify-start"
-                size="default"
+                size="sm"
               >
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
