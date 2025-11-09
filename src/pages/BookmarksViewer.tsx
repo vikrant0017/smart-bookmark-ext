@@ -29,46 +29,12 @@ export function BookmarksViewer() {
     getAllBookmarks();
   }, []);
 
-  useEffect(() => {
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-      for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-        // TODO: Replace with a logger for debug purpose in development
-        console.log(
-          `Storage key "${key}" in namespace "${namespace}" changed.`,
-          `Old value was "${oldValue}", new value is "${newValue}".`,
-        );
+  // useEffect(() => {
+  //   chrome.storage.onChanged.addListener((changes, namespace) => {
+  //     // TODO: Handle Syncing logic
 
-        /*
-        If a new entry is added oldValue will be underfined and newValue will contain the set value,
-        else if a entry is deleted, newValue will be undefined.
-        */
-
-        if (newValue) {
-          setBookmarks((prev) => {
-            if (
-              prev.findIndex(({ timestamp }) => timestamp === Number(key)) == -1
-            ) {
-              return [...prev, newValue];
-            }
-
-            return prev;
-          });
-        } else {
-          setBookmarks((prev) => {
-            const index = prev.findIndex(
-              ({ timestamp }) => timestamp === Number(key),
-            );
-
-            if (index !== -1) {
-              return [...prev.slice(0, index), ...prev.slice(index + 1)];
-            }
-
-            return prev;
-          });
-        }
-      }
-    });
-  }, []);
+  //   });
+  // }, []);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
