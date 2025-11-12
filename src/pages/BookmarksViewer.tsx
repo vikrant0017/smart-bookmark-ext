@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Bookmark } from "@/components/Bookmark";
-import { Search, Filter, ExternalLink, Calendar } from "lucide-react";
+import { ExternalLink, Calendar } from "lucide-react";
 import type { BookmarkContent } from "@/lib/BookmarkContent";
 import { getAll } from "@/lib/storage";
 
@@ -26,9 +18,6 @@ const DESCRIPTION_MAX_LENGTH = 200;
 const TAGS_MAX_LENGTH = 5;
 
 export function BookmarksViewer() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSort, setSelectedSort] = useState("recent");
   const [bookmarks, setBookmarks] = useState<BookmarkContent[]>([]);
   const [selectedBookmark, setSelectedBookmark] =
     useState<BookmarkContent | null>(null);
@@ -75,88 +64,6 @@ export function BookmarksViewer() {
         <p className="text-muted-foreground">
           Manage and organize your saved bookmarks
         </p>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search bookmarks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 text-base"
-          />
-        </div>
-      </div>
-
-      {/* Filter Section */}
-      <div className="mb-8 p-4 bg-muted/50 rounded-lg">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-4 w-4" />
-          <h2 className="text-lg font-semibold">Filters</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Category</label>
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="development">Development</SelectItem>
-                <SelectItem value="design">Design</SelectItem>
-                <SelectItem value="productivity">Productivity</SelectItem>
-                <SelectItem value="learning">Learning</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">Sort By</label>
-            <Select value={selectedSort} onValueChange={setSelectedSort}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">Most Recent</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                <SelectItem value="mostVisited">Most Visited</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">Tags</label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by tags" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tags</SelectItem>
-                <SelectItem value="react">React</SelectItem>
-                <SelectItem value="javascript">JavaScript</SelectItem>
-                <SelectItem value="typescript">TypeScript</SelectItem>
-                <SelectItem value="css">CSS</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <Button variant="outline" size="sm">
-            Clear Filters
-          </Button>
-          <Button variant="outline" size="sm">
-            Save Filter Preset
-          </Button>
-        </div>
       </div>
 
       {/* Bookmarks Count */}

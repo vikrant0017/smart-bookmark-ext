@@ -5,7 +5,13 @@ export default defineManifest({
   name: "Smart Bookmark",
   version: "0.1.0",
   description: "Summarize pages with AI and save",
-  permissions: ["sidePanel", "activeTab", "storage", "tabs", "contextMenus"],
+  permissions: ["activeTab", "storage"],
+  icons: {
+    "16": "public/icons/icon16.png",
+    "32": "public/icons/icon32.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png",
+  },
   action: {
     default_title: "Open Bookmark Panel",
     default_popup: "popup.html",

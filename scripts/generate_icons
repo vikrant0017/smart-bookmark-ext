@@ -1,0 +1,19 @@
+#! /bin/bash
+filename="$1"
+outDir="$2"
+
+if [ -z "$filename" ]; then
+    echo "Error: Provide the image file to generate icons as first argument" >&2
+    exit 1
+fi
+
+
+if [ -z "$outDir" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    outDir="$SCRIPT_DIR/../public/icons"
+fi
+
+magick $filename -resize 16x16 "$outDir/icon16.png"
+magick $filename -resize 32x32 "$outDir/icon32.png"
+magick $filename -resize 48x48 "$outDir/icon48.png"
+magick $filename -resize 128x128 "$outDir/icon128.png"
